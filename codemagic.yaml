@@ -24,7 +24,7 @@ workflows:
 
       - name: Build for iOS Simulator (no code signing)
         script: |
-          flutter build ios --simulator --release
+          flutter build ios --simulator --debug
 
     artifacts:
       - build/ios/iphonesimulator/Runner.app
