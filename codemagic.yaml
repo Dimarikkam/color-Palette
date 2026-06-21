@@ -1,10 +1,9 @@
-# Codemagic: сборка iOS БЕЗ подписи (code signing)
-# В Codemagic выберите: Settings → Build configuration → codemagic.yaml
-# Workflow: ios-no-codesign
+# Codemagic: iOS сборка БЕЗ подписи и БЕЗ Apple Developer
+# Start new build → Select workflow from codemagic.yaml → ios-no-codesign
 
 workflows:
   ios-no-codesign:
-    name: iOS build without code signing
+    name: iOS Simulator (no code signing)
     max_build_duration: 60
     instance_type: mac_mini_m2
 
@@ -16,20 +15,16 @@ workflows:
     scripts:
       - name: Install Flutter dependencies
         script: |
-          flutter packages pub get
-
-      - name: Generate iOS Flutter files
-        script: |
-          flutter build ios --config-only
+          flutter pub get
 
       - name: Install CocoaPods dependencies
         script: |
           cd ios
           pod install
 
-      - name: Build iOS without code signing
+      - name: Build for iOS Simulator (no code signing)
         script: |
-          flutter build ios --release --no-codesign
+          flutter build ios --simulator --release
 
     artifacts:
-      - build/ios/iphoneos/Runner.app
+      - build/ios/iphonesimulator/Runner.app
