@@ -1,30 +1,75 @@
-# Codemagic: iOS сборка БЕЗ подписи и БЕЗ Apple Developer
-# Start new build → Select workflow from codemagic.yaml → ios-no-codesign
+# Codemagic workflows
+# Start new build → Select workflow from codemagic.yaml
 
 workflows:
   ios-no-codesign:
     name: iOS Simulator (no code signing)
     max_build_duration: 60
     instance_type: mac_mini_m2
-
     environment:
       flutter: stable
       xcode: latest
       cocoapods: default
-
     scripts:
       - name: Install Flutter dependencies
         script: |
           flutter pub get
-
       - name: Install CocoaPods dependencies
         script: |
           cd ios
           pod install
-
       - name: Build for iOS Simulator (no code signing)
         script: |
           flutter build ios --simulator --debug
-
     artifacts:
       - build/ios/iphonesimulator/Runner.app
+
+  # IPA для установки на iPhone через AltStore (бесплатный Apple ID)
+  # AltStore подпишет приложение при установке
+  ios-ipa-altstore:
+    name: iOS IPA for AltStore (no Apple Developer)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install Flutter dependencies
+        script: |
+          flutter pub get
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios
+          pod install
+      - name: Build for real iPhone (unsigned)
+        script: |
+          flutter build ios --release --no-codesign
+      - name: Package IPA
+        script: |
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          zip -r ColorPalette.ipa Payload
+          rm -rf Payload
+    artifacts:
+      - build/ios/iphoneos/ColorPalette.ipa
+
+  # IPA с подписью для App Store / TestFlight (нужен Apple Developer $99/год)
+  # ios-ipa-release:
+  #   name: iOS IPA for App Store
+  #   max_build_duration: 60
+  #   instance_type: mac_mini_m2
+  #   environment:
+  #     flutter: stable
+  #     xcode: latest
+  #     cocoapods: default
+  #     ios_signing:
+  #       distribution_type: app_store
+  #       bundle_identifier: com.colorpalette.colorPalette
+  #   scripts:
+  #     - flutter pub get
+  #     - cd ios && pod install
+  #     - flutter build ipa --release
+  #   artifacts:
+  #     - build/ios/ipa/*.ipa
